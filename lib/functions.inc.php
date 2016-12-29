@@ -342,6 +342,13 @@ function change_password( $ldap, $dn, $password, $ad_mode, $ad_options, $samba_m
 
         $bmod = ldap_modify_batch($ldap, $dn, $modifications);
     } else {
+        # LDAP_SERVER_POLICY_HINTS_OID for Windows 2012 and above
+        # Enforces password history and minimum age
+        $histctrl = array(
+            "oid" => "1.2.840.113556.1.4.2239",
+            "value" => sprintf("%c%c%c%c%c", 48, 3, 2, 1, 1)
+        );
+        $sethistctrl = ldap_set_option($ldap, LDAP_OPT_SERVER_CONTROLS, array($histctrl));
         # Else just replace with new password
         $replace = ldap_mod_replace($ldap, $dn, $userdata);
     }
